@@ -34,21 +34,24 @@ button {
 
 /* ---- wooden panel & slots ---- */
 #panel {
-    --plank: #8b6440;
-    --grain1: #9d734d;
-    --grain2: #7c5b3c;
-    --edge: #5d432c;
-    background: var(--panel-tex, none), repeating-linear-gradient(25deg, var(--grain1)0 20px, var(--grain2)20px 40px), var(--plank);
-    background-blend-mode: multiply, normal, normal;
-    border: 6px solid var(--edge);
-    border-radius: 18px;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, .6);
-    padding: 1rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto 1fr auto;
-    gap: 1rem;
-    width: min(90vw, 700px);
+    --wood-url: url("./assets/wood/oak.jpg");  /* default */
+    background:
+        var(--grain-overlay, none),
+        var(--wood-url) center/cover;
+    box-shadow:
+        inset 0 1px 2px rgba(255, 255, 255, .15),  /* highlight */
+        inset 0 -2px 4px rgba(0, 0, 0, .3),   /* inner shadow */
+        0 6px 18px rgba(0, 0, 0, .6);   /* drop */
+}
+
+#panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--wood-tint, transparent);
+    mix-blend-mode: multiply;
+    pointer-events: none;
 }
 
 .slot {
