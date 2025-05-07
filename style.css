@@ -41,7 +41,7 @@ button {
 
 /* ---- wooden panel & slots ---- */
 #panel {
-    --wood-url: url("./assets/wood/oak.jpg");  /* default */
+    --wood-url: url("./assets/wood/red_oak.jpg");  /* default changed from oak to red_oak */
     background:
         var(--grain-overlay, none),
         var(--wood-url) center/cover;
@@ -410,4 +410,166 @@ button {
         transform: translate(-50%, -50%) scale(2);
         opacity: 0;
     }
+}
+
+/* ---- wood selector panel ---- */
+#wood-selector {
+    background: #3c352e;
+    border-left: 6px solid #5d432c;
+    color: #faf9f7;
+    width: 160px;
+    padding: 1.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    box-shadow: -4px 0 12px rgba(0, 0, 0, .4);
+    height: 100vh;
+    position: fixed;
+    right: 0;
+    top: 0;
+    align-items: center;
+}
+
+#wood-selector h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+
+.dial-container {
+    width: 150px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-top: 1rem;
+}
+
+.dial {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    background: var(--wood-medium);
+    position: relative;
+    border: 4px solid var(--wood-dark);
+    box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 3px rgba(255, 255, 255, 0.2);
+    transform: rotate(0deg);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background-image: var(--wood-url);
+    background-size: cover;
+    cursor: pointer;
+    outline: none;
+}
+
+.dial:hover {
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.6),
+        inset 0 1px 3px rgba(255, 255, 255, 0.3);
+}
+
+.dial:active {
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.4),
+        inset 0 1px 3px rgba(255, 255, 255, 0.1);
+}
+
+.dial:focus {
+    box-shadow: 
+        0 6px 12px rgba(0, 0, 0, 0.5),
+        inset 0 1px 3px rgba(255, 255, 255, 0.2),
+        0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.dial-arrow {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 16px solid #f8f8f8;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+    z-index: 10;
+    pointer-events: none;
+}
+
+.texture-dot {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--wood-dark);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 5;
+    background-size: cover;
+}
+
+/* Remove individual dot positioning - now handled by JavaScript */
+/* Add wood texture backgrounds */
+.texture-dot[data-wood="red_oak"] {
+    background-image: url("./assets/wood/red_oak.jpg");
+}
+
+.texture-dot[data-wood="white_oak"] {
+    background-image: url("./assets/wood/white_oak.jpg");
+}
+
+.texture-dot[data-wood="cherry"] {
+    background-image: url("./assets/wood/cherry.jpg");
+}
+
+.texture-dot[data-wood="walnut"] {
+    background-image: url("./assets/wood/walnut.jpg");
+}
+
+.texture-dot[data-wood="bamboo"] {
+    background-image: url("./assets/wood/bamboo.jpg");
+}
+
+.texture-dot[data-wood="beech"] {
+    background-image: url("./assets/wood/beech.jpg");
+}
+
+.texture-dot[data-wood="maple"] {
+    background-image: url("./assets/wood/maple.jpg");
+}
+
+.texture-dot.active {
+    border: 2px solid #fff;
+    z-index: 10;
+    animation: glow 2s infinite;
+}
+
+@keyframes glow {
+    0% {
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 0 10px rgba(255, 255, 255, 0.7);
+    }
+    100% {
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+}
+
+.wood-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Adjust panel position to account for the selector */
+#panel {
+    margin-left: 180px;
+    margin-right: 180px;
 }

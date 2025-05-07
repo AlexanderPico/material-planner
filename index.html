@@ -14,7 +14,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Wooden Planner</title>
+    <title>Wooden Planner</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="style.css" />
 </head>
@@ -37,10 +37,29 @@
         <div class="slot empty" data-slot="BR"></div>
     </main>
 
+    <!-- Wood texture selector -->
+    <aside id="wood-selector">
+        <h2>Wood Texture</h2>
+        <div class="dial-container">
+            <div class="dial-arrow"></div>
+            <div class="dial" tabindex="0">
+                <div class="texture-dot" data-wood="red_oak"></div>
+                <div class="texture-dot" data-wood="white_oak"></div>
+                <div class="texture-dot" data-wood="cherry"></div>
+                <div class="texture-dot" data-wood="walnut"></div>
+                <div class="texture-dot" data-wood="bamboo"></div>
+                <div class="texture-dot" data-wood="beech"></div>
+                <div class="texture-dot" data-wood="maple"></div>
+            </div>
+        </div>
+        <div class="wood-name">Red Oak</div>
+    </aside>
+
     <!-- scripts -->
     <script src="wood.js" defer></script>
     <script src="modules.js" defer></script>
     <script src="dnd.js" defer></script>
+    <script src="wood-selector.js" defer></script>
 </body>
 
 </html>

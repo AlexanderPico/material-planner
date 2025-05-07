@@ -9,6 +9,13 @@
     function load(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def } catch { return def; } }
     function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
+    /* Apply current wood texture to widget */
+    function applyWoodTexture(element) {
+        if (window.getCurrentWoodPath) {
+            element.style.backgroundImage = `url(${window.getCurrentWoodPath()})`;
+        }
+    }
+
     /* ---------- Modules ---------- */
     window.modules = {
         calendar: (props) => root.calendar(props),
@@ -24,6 +31,7 @@
         const key = yyyymm(month);
         const closed = new Set(load(`closed-${key}`, []));
         const cont = Object.assign(document.createElement('div'), { className: 'widget' });
+        applyWoodTexture(cont);
         cont.innerHTML = `<header>${month.toLocaleString('default', { month: 'long', year: 'numeric' })}</header>`;
         const grid = document.createElement('div'); grid.className = 'calendar-grid'; cont.append(grid);
         const first = new Date(month.getFullYear(), month.getMonth(), 1);
@@ -51,6 +59,7 @@
         const key = `checklist-${props.id}`;
         const list = load(key, []);
         const cont = Object.assign(document.createElement('div'), { className: 'widget' });
+        applyWoodTexture(cont);
         cont.innerHTML = '<header>Checklist</header>';
         const ul = document.createElement('ul'); ul.style.listStyle = 'none'; ul.style.display = 'flex'; ul.style.flexDirection = 'column'; ul.style.gap = '.3rem'; cont.append(ul);
         function render() {
@@ -80,6 +89,7 @@
         const habits = load(`habit-labels`, ['Habit 1', 'Habit 2', 'Habit 3']).slice(0, 3);
         const gridState = load(`habit-${key}`, {}); // { 'YYYY-MM-DD': [0,2] }
         const cont = Object.assign(document.createElement('div'), { className: 'widget' });
+        applyWoodTexture(cont);
         cont.innerHTML = '<header>Habit Tracker</header>';
 
         // bins
@@ -124,6 +134,7 @@
     root.gauge = () => {
         const key = 'prog'; let val = load(key, 50);
         const cont = Object.assign(document.createElement('div'), { className: 'widget' });
+        applyWoodTexture(cont);
         cont.innerHTML = '<header>Progress</header>';
         const dial = document.createElement('div'); dial.style.position = 'relative'; dial.style.width = '80px'; dial.style.height = '40px'; dial.style.borderBottom = '4px solid #faf9f7'; dial.style.borderRadius = '0 0 80px 80px'; dial.style.display = 'flex'; dial.style.justifyContent = 'center'; dial.style.alignItems = 'flex-end'; cont.append(dial);
         const needle = document.createElement('div'); needle.className = 'gauge-needle'; dial.append(needle);
@@ -134,5 +145,14 @@
         slider.addEventListener('input', e => { val = +e.target.value; render(); save(key, val); });
         return cont;
     };
+
+    /* Listen for wood type changes */
+    document.addEventListener('woodTypeChanged', (e) => {
+        // Update all existing widgets with the new wood texture
+        const woodPath = `./assets/wood/${e.detail.woodType}.jpg`;
+        document.querySelectorAll('.widget').forEach(widget => {
+            widget.style.backgroundImage = `url(${woodPath})`;
+        });
+    });
 
 })();

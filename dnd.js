@@ -7,6 +7,16 @@ const slots = [...document.querySelectorAll('.slot')];
 const findBlock = type => document.querySelector(`.block[data-module="${type}"]`);
 const slotIsEmpty = slot => !slot.firstElementChild;
 
+// Apply current wood texture to elements
+function applyCurrentWoodTexture(elements) {
+    if (window.getCurrentWoodPath) {
+        const woodPath = window.getCurrentWoodPath();
+        elements.forEach(el => {
+            if (el) el.style.backgroundImage = `url(${woodPath})`;
+        });
+    }
+}
+
 /* === Sound System === */
 let audioContext = null;
 let audioInitialized = false;
@@ -117,6 +127,15 @@ slots.forEach(slot => {
     });
 });
 
+// Listen for wood texture changes
+document.addEventListener('woodTypeChanged', (e) => {
+    // Update all blocks with the new wood texture
+    const woodPath = `./assets/wood/${e.detail.woodType}.jpg`;
+    document.querySelectorAll('.block').forEach(block => {
+        block.style.backgroundImage = `url(${woodPath})`;
+    });
+});
+
 // Handle dropping onto a slot
 function handleSlotDrop(e, slot) {
     e.preventDefault();
@@ -140,6 +159,9 @@ function handleSlotDrop(e, slot) {
         playPlaceSound();
         
         slot.appendChild(w);
+        // Apply current wood texture
+        applyCurrentWoodTexture([w]);
+        
         const newBlock = findBlock(type);
         newBlock && (newBlock.style.display = 'none'); // Hide the block
         saveLayout();
@@ -156,6 +178,9 @@ function handleSlotDrop(e, slot) {
     widget.id = `w-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     widget.dataset.module = type;
     makeDraggable(widget, type);
+    
+    // Apply current wood texture 
+    applyCurrentWoodTexture([widget]);
 
     // Add placement animation effect
     slot.classList.add('receiving');
@@ -222,3 +247,11 @@ function saveLayout() {
         block.style.display = 'none'; // Hide the block completely
     });
 })();
+
+// Initialize blocks with current wood texture when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    // Apply texture to blocks once wood selector is ready
+    document.addEventListener('woodSelectorReady', () => {
+        applyCurrentWoodTexture(blocks);
+    });
+});
