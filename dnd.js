@@ -7,17 +7,75 @@ const slots = [...document.querySelectorAll('.slot')];
 const findBlock = type => document.querySelector(`.block[data-module="${type}"]`);
 const slotIsEmpty = slot => !slot.firstElementChild;
 
-// Create audio for wooden placement sound
-const placeSound = new Audio();
-placeSound.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAAFNgCVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWV//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAATYxh/KZAAAAAAD/+9DEAAAJdAF19BAAJbJE7j82MAF0YWdzAAEABQAGIQgUFQEYBAYTBwMJCnS4TAPiiBaNAZADAIIQVQ0FgIJAMYiCwXA4eA8eAB9A8vADg8T/5c+D4Pn5QfB85//Lg+D4HAQBA+D9/KAgCB8HwQBP/8oDwfd//KA8HwfBAED4Pggf////wQBAEDq7vmiAIGQeHQYJACAwiGQOAQEDwHBBJGBYDgAJjwFkABT7aPr9fu9Jx3Wf4zqdcbHDkAYQ2IGQCgIYKgmYKAKYnh8YiCEYRgYYQhkYIAQHQ+PBdRtb/Lj3qkjwakxoZJZJC1gKAt8hG5EjjTOV3fW5Y6KclLIL1UpKTgXzIc2mxUaVUklNSorHQ4UEpUuKQFQqYrJi8uNCpkaGiSuQ7FaXKjwolNTQWLi8qlRQYJjQWXIUpZBWmh4oNEpqaJJcuOigmNDQVaZHRQdT42XF5MbCVqm5okqa4+KJs0XFQVlM0dFEWTS4oiZskXJTNLCiTOJi5IiipqKyOKn/+7DE+IMKgGl5+PMAWfUM7v8zYAGplxcFZfNHEWcTQtFI1JBcvHJUuIkqrURRdkxUvS5MbmJ0TFJzNnE6IlEZPY5JikZnDiTFRXLlM8TEyIySZLDSuYSYuUzaVFxFHJEsSTcXGJ9Kik5IT6SDEomzxNLiI+OTSaHkx4ojI5NJdKJcuORgfLFk8lioEjhA0Ilo4LFiJRNoGHiRInA0eHRoXHR4aKC0kzw6JfDCJQplHBs8JhZMWkioKPKE8JBYFILokSSJ4dEGlEWdLTpiHiCaSIlScEhJQuRKk4JCJOCZEmTY4MIEicHhAsLly5ImTQsElFT4cREycFhIuDkyqNlBMkUJk6XGzBUkUJoNHi4wYKibOiwcTJk2cLlCpODJkodLDRYqQJsYHDJeYJlSRUmxwiSJk4XKFiRQnxgYPGCpInBYSKlSJNDRcTJkzVUdAwMMiSDEDQgjB4BUwCCdMIglzBAJIMAKcMAIfTGcJsxHBaMaQpjBsAEwPCaETQSjCYFEw0yMNNFmDAkDkwJAkMAwKxABAAAmkFu0GwF0OAK0GwN0G4rrNQQGwbHw8MAEYMAQOMAUAMARM6AkZMDAMM8haMPQ1MHARMFQHCIEGBADDIwERkCARxgtUQVBwwJAMxJAkwGA0aQkYAAAFAMYDAOYJgAYCAKYCgEAgCYGAQCAGYKgFgGYaAMAgBGBIAigAGCwBnDoOAoAjAEAigAGA4BGCQBGCIBGEoBGA4BGAQAmB4BGBoAGAIBmAYAh6GwZAEAGAoAmAQALAFQBMAxAQEYGAEYCgAYAgEUApgGABgMAJgGAYYAUBTAQADAgARQATAEATAMAgMFjAkADAwAUgCHgwCIAzAoAk0FgBGgHAMYCCKMCAAMAQAMvQDMBQAMAACGAFgQYAgAYDAGYCAGeAECTAUADA0Aw0CRLMAR/MRwqMDgbMKQJMBw2MLwgMEgmAQKABTnY7AYiILMBwAMGQiMQwtBITGLCHmQoZmLIImGIRGHAdmEAFGDgDiIJmBoDA==";
-placeSound.volume = 0.3;
+/* === Sound System === */
+let audioContext = null;
+let audioInitialized = false;
 
-// Create audio for wooden removal sound
-const removeSound = new Audio();
-removeSound.src = "data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAAFNgCVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWVlZWV//////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAAAAAAAAAAAATYxLcQpAAAAAAD/+9DEAAAJIAVt9BAAJhRE6n82YBDmYWdzAAASABg2QpYgCAEA4ZigEDI1hQzgCYyCYZwgQ1hCZwiY0hiDwDk8eIJBA4OEgH///+XB8HyfueD5+UHwfB8/6AQBAEAQPg+CB//8oCB8H/8oDwQBL/8ED4Pg+eD5//8EAQBAEAQP//+CAPggCAIHwQPgCAIHwQBA+A8EA9+UHwfB8HwQBc+CB8EAQPhhI6u75ggCBgEhSHA4DwaGgmAQEDwFhLMGQKAILioNCoXPn+1et12ZKTv9zfJD5/j/1wRAJDg7MaQwMOBZMMAHP/z5MLgdMNRGMixCMRAmLAQDghv5//95fv8RLRciSECgVYaBwdwvADBgFRqxS5vucbylmRTUo8HaQNUhQ1ESKUZWNVZWvpqUyGpMrKyiJJVKYuUwNSCJkSScz0sWlLNk6GasMlKmZUEJQRNEhUVkTWGpUtKwNChSpcuVpZKqJSogVlS1SZTWIlEDEyTFamS6VFSipJAmRKlpSSozIlacszqhDCpgaJE0yUlYI1Jhk6mqxAXE5MrRGpSVklSUr/+8BE/4ML0Gl1+bwBCW+M7n84YCCFZiZDFSWtRGSzEpRLIlotcjdBKaUrQmpJUxU0JE1WVNVdCTKjUyJFKh2glJGRUWuRVJdSoLmA5AqQzYcWKIGoVNFyM0HJlU6GoGQIp9TBcklQyQpUZnQx64TlqmiVEpYpLIUSnVMlU+pMqNzIZPhqBkG1ShMjmzYsKWM1U0HpCpgoUppGRkRJDQKUIdVKFAuJHIGgqXJpkpKwRrSBkOkKmiYeEi4dMiqS0oVCJkLUVKYoALiwwGxEAjAYJkwZA7MGATzAkDYLAFYUAxgcBsYDghGA4GhYAKYQAqmEwKZgmFKDwjTJ8g4yiCLMgRUDJMGYBGuYoALDgGt3a9KwDTW49jVuVAyFCpMNADy4BAwBBIMKAOjAIBQlA/MAADx8BpggAweFCYBgADAKEAxQAZMDwCTCQA4eAgBgDDAPTAESAFmAwABCBWmAIAZGAOHgEGK4CheAgsFWZEgkmDICZeAoHAGlIvjAQJsmAUHzQDQMA+HgKmKwEjhQmA4AxgqA8YBAoGAgCIBmBwEwdA4YTAGGAYAZgWBqNAUF4EzAIAYwJAGMHQADBMAMwLA7MAQDDAoAIwSARMAAAMhIDjAMB4SAOYEAMmAIDJgCACYDgEmBgDBgExiYCgcHAGjAKDBcA0YGgFGAoLZg2CAYGAGmAQCZgEEuAgXMFQADAgA83FUxDCZBAJGAAAZgWAgYGAHDBIKQXF05XAXOgIG0oJQNiQ5EQcmAQAU5DwzAxAZLiqcPgGmBgChgIAEYCACEAFzgcA0YAgMAAAjAQA0YAQAiiGKsIpIBSXGf/wMAqGw4nAsKxi1CuYIAGGBQApSBsVCoYFgAmBIAZV3YwOAnOi8OMFEOzBQBEPQcMA==";
-removeSound.volume = 0.3;
+// Initialize audio when user first interacts with the page
+function initAudio() {
+    if (audioInitialized) return;
+    
+    try {
+        // Create audio context
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioInitialized = true;
+        console.log("Audio initialized successfully");
+    } catch (e) {
+        console.warn('Web Audio API not supported:', e);
+    }
+}
 
-/* give any node drag‑source behaviour */
+// Play a wooden sound with the given parameters
+function playWoodSound(frequency, duration) {
+    if (!audioContext) return;
+    
+    try {
+        // Create oscillator
+        const oscillator = audioContext.createOscillator();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = frequency; // Hz
+        
+        // Create gain node for volume control
+        const gainNode = audioContext.createGain();
+        
+        // Set initial gain
+        gainNode.gain.value = 0.3;
+        
+        // Exponential ramp down to create the wooden sound decay
+        gainNode.gain.exponentialRampToValueAtTime(
+            0.001, audioContext.currentTime + duration
+        );
+        
+        // Connect nodes
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        // Start and stop
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + duration);
+    } catch (e) {
+        console.warn('Error playing audio:', e);
+    }
+}
+
+// Specific sound functions
+function playPlaceSound() {
+    // Lower frequency "thunk" sound for placement
+    playWoodSound(180, 0.15);
+}
+
+function playRemoveSound() {
+    // Higher frequency "knock" sound for removal
+    playWoodSound(240, 0.1);
+}
+
+// Initialize audio on first user interaction to satisfy browser autoplay policies
+document.addEventListener('click', initAudio, {once: true});
+document.addEventListener('keydown', initAudio, {once: true});
+
+/* === Drag & Drop === */
+
+// Give any node drag-source behavior
 function makeDraggable(node, type) {
     node.draggable = true;
     node.addEventListener('dragstart', e => {
@@ -35,12 +93,12 @@ function makeDraggable(node, type) {
     });
 }
 
-/* === palette blocks → drag sources === */
+// Make palette blocks draggable
 blocks.forEach(b => {
     makeDraggable(b, b.dataset.module);
 });
 
-/* === slots → drop targets === */
+// Setup slots as drop targets
 slots.forEach(slot => {
     slot.addEventListener('dragover', e => {
         e.preventDefault();
@@ -59,6 +117,7 @@ slots.forEach(slot => {
     });
 });
 
+// Handle dropping onto a slot
 function handleSlotDrop(e, slot) {
     e.preventDefault();
     const type = e.dataTransfer.getData('module');
@@ -77,9 +136,8 @@ function handleSlotDrop(e, slot) {
         slot.classList.add('receiving');
         setTimeout(() => slot.classList.remove('receiving'), 300);
         
-        // Play wooden placement sound
-        placeSound.currentTime = 0;
-        placeSound.play();
+        // Play "thunk" sound with Web Audio API
+        playPlaceSound();
         
         slot.appendChild(w);
         const newBlock = findBlock(type);
@@ -103,9 +161,8 @@ function handleSlotDrop(e, slot) {
     slot.classList.add('receiving');
     setTimeout(() => slot.classList.remove('receiving'), 300);
 
-    // Play wooden placement sound
-    placeSound.currentTime = 0;
-    placeSound.play();
+    // Play "thunk" sound with Web Audio API
+    playPlaceSound();
 
     slot.appendChild(widget);
     srcBlock.style.display = 'none'; // Hide the block completely
@@ -127,9 +184,8 @@ palette.addEventListener('drop', e => {
     palette.classList.add('receiving');
     setTimeout(() => palette.classList.remove('receiving'), 300);
 
-    // Play wooden removal sound
-    removeSound.currentTime = 0;
-    removeSound.play();
+    // Play "knock" sound with Web Audio API
+    playRemoveSound();
 
     w.parentElement && (w.parentElement.innerHTML = '');  // clear slot
     w.remove();
@@ -140,7 +196,7 @@ palette.addEventListener('drop', e => {
     saveLayout();
 });
 
-/* === persist === */
+/* === persist layout === */
 function saveLayout() {
     const layout = slots.map(sl =>
         slotIsEmpty(sl) ? null : { slot: sl.dataset.slot, type: sl.firstElementChild.dataset.module }
