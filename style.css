@@ -8,68 +8,132 @@
 body {
     font-family: system-ui, sans-serif;
     background: #2b2a28;
+    color: #faf9f7;
     display: flex;
     min-height: 100vh;
     place-content: center;
 }
 
-/* ---- wooden panel ---- */
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+/* ---- gear button ---- */
+#gear {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: #5d432c;
+    color: #faf9f7;
+    border: none;
+    padding: .4rem .6rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .4);
+}
+
+/* ---- wooden panel & slots ---- */
 #panel {
-    /* colour tokens remain – new: --panel-tex injected by wood.js */
     --plank: #8b6440;
     --grain1: #9d734d;
     --grain2: #7c5b3c;
     --edge: #5d432c;
-    /* ↓ composite: procedural texture over gradient */
-    background: var(--panel-tex, none),
-        repeating-linear-gradient(25deg, var(--grain1) 0 20px, var(--grain2) 20px 40px),
-        var(--plank);
+    background: var(--panel-tex, none), repeating-linear-gradient(25deg, var(--grain1)0 20px, var(--grain2)20px 40px), var(--plank);
     background-blend-mode: multiply, normal, normal;
     border: 6px solid var(--edge);
     border-radius: 18px;
     box-shadow: 0 8px 18px rgba(0, 0, 0, .6);
-    padding: 1.2rem;
+    padding: 1rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 1rem;
     width: min(90vw, 700px);
-    color: #faf9f7;
 }
 
-#panel:hover {
-    transform: perspective(900px) rotateX(2deg) rotateY(-2deg);
-    transition: transform .4s ease;
-}
-
-/* ---- header & navigation ---- */
-header {
+.slot {
+    background: rgba(255, 255, 255, .06);
+    border-radius: 10px;
+    min-height: 8rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: .4rem;
-    margin-bottom: 1rem;
+    overflow: hidden;
 }
 
-header h1 {
-    flex: 1;
-    text-align: center;
-    font-weight: 600;
+.slot.wide {
+    grid-column: 1/3;
+    min-height: 6rem;
 }
 
-header button {
-    background: var(--edge);
-    border: none;
-    color: #faf9f7;
-    width: 2rem;
-    height: 2rem;
+/* ---- workbench overlay ---- */
+#workbench {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#palette {
+    background: #3c352e;
+    padding: 1.2rem 1.6rem;
+    border-radius: 12px;
+    width: 260px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .6);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+#palette h2 {
+    font-size: 1.1rem;
+}
+
+#palette ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+}
+
+#palette li button {
+    width: 100%;
+    padding: .5rem;
     border-radius: 6px;
-    cursor: pointer;
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, .2);
+    border: none;
+    background: #5d432c;
+    color: #faf9f7;
 }
 
-/* ---- calendar grid ---- */
-#calendar {
+#palette .save {
+    margin-top: auto;
+    background: #226e4a;
+}
+
+/* ---- widget common styling ---- */
+.widget {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+}
+
+.widget header {
+    font-weight: 600;
+    margin-bottom: .3rem;
+}
+
+/* specific quick visuals */
+.calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: .3rem;
-    margin-bottom: 1.4rem;
+    gap: .2rem;
+    width: 100%;
 }
 
 .day {
@@ -77,10 +141,9 @@ header button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, .06);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all .25s ease;
+    background: rgba(255, 255, 255, .07);
+    border-radius: 6px;
+    font-size: .8rem;
 }
 
 .day.closed {
@@ -88,55 +151,32 @@ header button {
     text-decoration: line-through;
 }
 
-/* weekday labels */
-.day.head {
-    background: none;
-    font-size: .8rem;
-    cursor: default;
-    pointer-events: none;
-}
-
-/* ---- checklist ---- */
-#checklist h2 {
-    margin-bottom: .6rem;
-    font-size: 1.1rem;
-}
-
-#todo {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: .4rem;
-    margin-bottom: .6rem;
-}
-
-.todo-item {
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-}
-
-.todo-item input[type=checkbox] {
-    width: 1.1rem;
-    height: 1.1rem;
+.habit-hole {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #faf9f7;
+    border-radius: 50%;
     cursor: pointer;
 }
 
-.todo-item label.checked {
-    text-decoration: line-through;
-    opacity: .55;
+.habit-hole.filled {
+    background: currentColor;
 }
 
-/* add‑item form */
-#new-item-form {
-    display: flex;
+.gauge-needle {
+    width: 4px;
+    height: 50%;
+    background: #faf9f7;
+    transform-origin: bottom center;
 }
 
-#new-item {
-    flex: 1;
-    padding: .4rem .6rem;
-    border-radius: 6px;
-    border: none;
-    background: rgba(255, 255, 255, .12);
-    color: #faf9f7;
+.timer-display {
+    font-size: 1.3rem;
+}
+
+/* reduced motion support */
+@media(prefers-reduced-motion:reduce) {
+    #panel:hover {
+        transform: none;
+    }
 }

@@ -1,35 +1,55 @@
+<!-- =================================================
+  Wooden Planner – Workbench Version (core modules)
+  Files in this bundle:
+    • index.html
+    • style.css (supersedes previous)
+    • wood.js      (unchanged from v2)
+    • modules.js   (new – defines five core widgets)
+    • workbench.js (new – palette + layout manager)
+  Note: calendar & checklist logic moved into modules.js; remove old app.js.
+================================================= -->
 <!doctype html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
-    <title>Wooden Planner Prototype</title>
+    <title>Wooden Planner Workbench</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
+    <!-- Gear enters workbench mode -->
+    <button id="gear" aria-label="Customize layout">⚙️</button>
+
+    <!-- Main panel with named slots (TL/TR/BL/BR/FT) -->
     <main id="panel">
-        <header>
-            <h1 id="month-label"></h1>
-            <button id="prev" aria-label="Previous month">&#9664;</button>
-            <button id="next" aria-label="Next month">&#9654;</button>
-        </header>
-
-        <section id="calendar"></section>
-
-        <section id="checklist">
-            <h2>Checklist</h2>
-            <ul id="todo"></ul>
-            <form id="new-item-form">
-                <input id="new-item" placeholder="Add task…" autocomplete="off" />
-            </form>
-        </section>
+        <div class="slot" data-slot="TL"></div>
+        <div class="slot" data-slot="TR"></div>
+        <div class="slot" data-slot="BL"></div>
+        <div class="slot" data-slot="BR"></div>
+        <div class="slot wide" data-slot="FT"></div>
     </main>
 
-    <!-- new: generates procedural wood texture & exposes it via CSS var -->
+    <!-- Workbench overlay -->
+    <div id="workbench" hidden>
+        <aside id="palette">
+            <h2>Add module</h2>
+            <ul>
+                <li><button data-type="calendar">Monthly Calendar</button></li>
+                <li><button data-type="checklist">Checklist</button></li>
+                <li><button data-type="habit">Habit Tracker</button></li>
+                <li><button data-type="gauge">Progress Gauge</button></li>
+                <li><button data-type="pomodoro">Pomodoro Timer</button></li>
+            </ul>
+            <button id="wb-exit" class="save">✓ Save & Exit</button>
+        </aside>
+    </div>
+
+    <!-- scripts -->
     <script src="wood.js" defer></script>
-    <script src="app.js" defer></script>
+    <script src="modules.js" defer></script>
+    <script src="workbench.js" defer></script>
 </body>
 
 </html>
