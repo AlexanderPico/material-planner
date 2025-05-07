@@ -180,3 +180,8 @@ button {
         transform: none;
     }
 }
+
+/* --- ensure any element with [hidden] disappears regardless of later rules --- */
+[hidden] {
+    display: none !important;
+}
