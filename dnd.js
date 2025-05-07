@@ -1,88 +1,112 @@
-(function () {
-    const create = window.WoodenPlanner;
-    const layoutKey = 'layout-v1';
-    const slots = [...document.querySelectorAll('#panel .slot')];
-    const palette = document.getElementById('palette');
+/* ---------- DOM refs ---------- */
+const palette = document.getElementById('palette');
+const blocks = [...palette.querySelectorAll('.block')];
+const slots = [...document.querySelectorAll('.slot')];
 
-    /* --- helpers --- */
-    function saveLayout(l) { localStorage.setItem(layoutKey, JSON.stringify(l)); }
-    function loadLayout() { return JSON.parse(localStorage.getItem(layoutKey) || '[]'); }
-    function findEmptySlot() { return slots.find(s => !s.firstElementChild); }
+/* ---------- helper ---------- */
+function blockFromType(type) {
+    return document.querySelector(`.block[data-module="${type}"]`);
+}
 
-    /* --- initial render from storage --- */
-    function render() {
-        const layout = loadLayout();
-        // clear slots
-        slots.forEach(s => { s.innerHTML = ''; });
-        // restore widgets
-        layout.forEach(cfg => {
-            const slot = document.querySelector(`[data-slot="${cfg.slot}"]`);
-            if (slot) slot.append(create[cfg.type](cfg.props || {}));
-        });
-    }
-
-    render();
-
-    /* --- drag from palette to board --- */
-    palette.addEventListener('dragstart', e => {
-        const type = e.target.dataset.type;
-        if (!type) return;
-        e.dataTransfer.setData('text/plain', type);
+/* ---------- drag sources ---------- */
+// palette blocks
+blocks.forEach(b => {
+    b.draggable = true;
+    b.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('module', b.dataset.module);
     });
+});
 
-    /* --- drag from board back to palette --- */
-    document.getElementById('panel').addEventListener('dragstart', e => {
-        if (!e.target.classList.contains('widget')) return;
-        const slotEl = e.target.closest('.slot');
-        e.dataTransfer.setData('text/plain', JSON.stringify({ remove: slotEl.dataset.slot, type: e.target.dataset.type }));
+// widgets that are already on the board (created later, see observeSlot)
+function makeWidgetDraggable(widget) {
+    widget.draggable = true;
+    widget.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('widgetId', widget.id);
+        e.dataTransfer.setData('module', widget.dataset.module);
     });
+}
 
-    /* --- slot dragover / drop --- */
-    slots.forEach(slot => {
-        slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('drag-over'); });
-        slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
-        slot.addEventListener('drop', e => {
-            e.preventDefault(); slot.classList.remove('drag-over');
-            if (slot.firstElementChild) return; // already occupied
-            const data = e.dataTransfer.getData('text/plain');
-            if (!data) return;
-            let type = data;
-            try { const obj = JSON.parse(data); if (obj.remove) { removeFromLayout(obj.remove); type = obj.type; } } catch { }
-            addToLayout(slot.dataset.slot, type);
-        });
+/* ---------- slot targets ---------- */
+slots.forEach(slot => {
+    slot.addEventListener('dragover', e => e.preventDefault());
+    slot.addEventListener('drop', e => {
+        e.preventDefault();
+        const type = e.dataTransfer.getData('module');
+        const widId = e.dataTransfer.getData('widgetId');
+
+        // CASE 1: we’re moving an existing widget -> just re‑parent it
+        if (widId) {
+            const w = document.getElementById(widId);
+            if (w && slot !== w.parentElement) {
+                w.parentElement.classList.add('empty');
+                slot.classList.remove('empty');
+                slot.appendChild(w);
+                saveLayout();
+            }
+            return;
+        }
+
+        // CASE 2: we’re dropping a fresh palette block
+        if (!type || !slot.classList.contains('empty')) return;
+        const block = blockFromType(type);
+        if (block.classList.contains('in-use')) return;   // already placed elsewhere
+
+        const widget = window.modules[type](/* returns DOM node */);
+        widget.id = `w-${crypto.randomUUID()}`;
+        widget.dataset.module = type;
+        makeWidgetDraggable(widget);
+
+        slot.classList.remove('empty');
+        slot.appendChild(widget);
+        block.classList.add('in-use');
+        saveLayout();
     });
+});
 
-    /* --- palette drop (remove) --- */
-    palette.addEventListener('dragover', e => e.preventDefault());
-    palette.addEventListener('drop', e => {
-        const data = e.dataTransfer.getData('text/plain');
-        try { const obj = JSON.parse(data); if (obj.remove) { removeFromLayout(obj.remove); } } catch { }
+/* ---------- palette target ---------- */
+palette.addEventListener('dragover', e => e.preventDefault());
+palette.addEventListener('drop', e => {
+    e.preventDefault();
+    const widId = e.dataTransfer.getData('widgetId');
+    if (!widId) return;
+
+    const widget = document.getElementById(widId);
+    if (!widget) return;
+
+    const type = widget.dataset.module;
+    const block = blockFromType(type);
+
+    // remove widget from its slot
+    widget.parentElement.classList.add('empty');
+    widget.remove();
+    block.classList.remove('in-use');
+    saveLayout();
+});
+
+/* ---------- layout persistence ---------- */
+function saveLayout() {
+    const layout = slots.map(s => {
+        if (s.classList.contains('empty')) return null;
+        return { slot: s.dataset.slot, type: s.firstElementChild.dataset.module };
     });
+    localStorage.setItem('layout-v1', JSON.stringify(layout));
+}
 
-    /* --- layout mutators --- */
-    function addToLayout(slotId, type) {
-        const layout = loadLayout();
-        // avoid duplicates of same type
-        if (layout.some(l => l.type === type)) return;
-        layout.push({ slot: slotId, type });
-        saveLayout(layout);
-        render();
-    }
-    function removeFromLayout(slotId) {
-        let layout = loadLayout();
-        layout = layout.filter(l => l.slot !== slotId);
-        saveLayout(layout);
-        render();
-    }
+/* ---------- recreate layout on load ---------- */
+(function bootstrap() {
+    const parts = JSON.parse(localStorage.getItem('layout-v1') || '[]');
+    parts.forEach(p => {
+        const slot = document.querySelector(`.slot[data-slot="${p.slot}"]`);
+        const block = blockFromType(p.type);
+        if (!slot || !block) return;
 
-    /* --- palette blocks should grey out if already on board --- */
-    function updatePalette() {
-        const layout = loadLayout();
-        [...palette.querySelectorAll('.block')].forEach(b => {
-            const used = layout.some(l => l.type === b.dataset.type);
-            b.style.opacity = used ? .5 : 1;
-        });
-    }
-    window.addEventListener('storage', () => { render(); updatePalette(); });
-    updatePalette();
+        const widget = window.modules[p.type]();
+        widget.id = `w-${crypto.randomUUID()}`;
+        widget.dataset.module = p.type;
+        makeWidgetDraggable(widget);
+
+        slot.classList.remove('empty');
+        slot.appendChild(widget);
+        block.classList.add('in-use');
+    });
 })();
