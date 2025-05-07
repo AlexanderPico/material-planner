@@ -9,6 +9,15 @@
     function load(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def } catch { return def; } }
     function save(key, val) { localStorage.setItem(key, JSON.stringify(val)); }
 
+    /* ---------- Modules ---------- */
+    window.modules = {
+        calendar: buildCalendarWidget,
+        checklist: buildChecklistWidget,
+        habit: buildHabitWidget,
+        gauge: buildGaugeWidget,
+        pomodoro: buildPomodoroWidget
+    };
+
     /* ---------- Calendar ---------- */
     root.calendar = (props = {}) => {
         const month = new Date();
