@@ -1,111 +1,111 @@
-/* ---------- DOM refs ---------- */
+/* === DOM refs === */
 const palette = document.getElementById('palette');
 const blocks = [...palette.querySelectorAll('.block')];
 const slots = [...document.querySelectorAll('.slot')];
 
-/* ---------- helper ---------- */
-function blockFromType(type) {
-    return document.querySelector(`.block[data-module="${type}"]`);
+/* === helpers === */
+const findBlock = type => document.querySelector(`.block[data-module="${type}"]`);
+const slotIsEmpty = slot => !slot.firstElementChild;
+
+/* give any node drag‑source behaviour */
+function makeDraggable(node, type) {
+    node.draggable = true;
+    node.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('widgetId', node.id);   // present for existing widgets
+        e.dataTransfer.setData('module', type);      // always present
+    });
 }
 
-/* ---------- drag sources ---------- */
-// palette blocks
+/* === palette blocks → drag sources === */
 blocks.forEach(b => {
-    b.draggable = true;
-    b.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('module', b.dataset.module);
-    });
+    makeDraggable(b, b.dataset.module);
 });
 
-// widgets that are already on the board (created later, see observeSlot)
-function makeWidgetDraggable(widget) {
-    widget.draggable = true;
-    widget.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('widgetId', widget.id);
-        e.dataTransfer.setData('module', widget.dataset.module);
-    });
-}
-
-/* ---------- slot targets ---------- */
+/* === slots → drop targets === */
 slots.forEach(slot => {
     slot.addEventListener('dragover', e => e.preventDefault());
-    slot.addEventListener('drop', e => {
-        e.preventDefault();
-        const type = e.dataTransfer.getData('module');
-        const widId = e.dataTransfer.getData('widgetId');
-
-        // CASE 1: we’re moving an existing widget -> just re‑parent it
-        if (widId) {
-            const w = document.getElementById(widId);
-            if (w && slot !== w.parentElement) {
-                w.parentElement.classList.add('empty');
-                slot.classList.remove('empty');
-                slot.appendChild(w);
-                saveLayout();
-            }
-            return;
-        }
-
-        // CASE 2: we’re dropping a fresh palette block
-        if (!type || !slot.classList.contains('empty')) return;
-        const block = blockFromType(type);
-        if (block.classList.contains('in-use')) return;   // already placed elsewhere
-
-        const widget = window.modules[type](/* returns DOM node */);
-        widget.id = `w-${crypto.randomUUID()}`;
-        widget.dataset.module = type;
-        makeWidgetDraggable(widget);
-
-        slot.classList.remove('empty');
-        slot.appendChild(widget);
-        block.classList.add('in-use');
-        saveLayout();
-    });
+    slot.addEventListener('drop', e => handleSlotDrop(e, slot));
 });
 
-/* ---------- palette target ---------- */
+function handleSlotDrop(e, slot) {
+    e.preventDefault();
+    const type = e.dataTransfer.getData('module');
+    const widId = e.dataTransfer.getData('widgetId');
+
+    /* --- move an existing widget -------------------------------- */
+    if (widId) {
+        const w = document.getElementById(widId);
+        if (!w || slot === w.parentElement || !slotIsEmpty(slot)) return;
+
+        /* update palette */
+        const oldBlock = findBlock(w.dataset.module);
+        oldBlock && oldBlock.classList.remove('in-use');
+
+        slot.appendChild(w);
+        const newBlock = findBlock(type);
+        newBlock && newBlock.classList.add('in-use');
+        saveLayout();
+        return;
+    }
+
+    /* --- place a fresh block ----------------------------------- */
+    if (!type || !slotIsEmpty(slot)) return;
+    const srcBlock = findBlock(type);
+    if (!srcBlock || srcBlock.classList.contains('in-use')) return;
+
+    /* build widget */
+    const widget = window.modules[type]();
+    widget.id = `w-${crypto.randomUUID()}`;
+    widget.dataset.module = type;
+    makeDraggable(widget, type);
+
+    slot.appendChild(widget);
+    srcBlock.classList.add('in-use');
+    saveLayout();
+}
+
+/* === palette → drop target (remove widget) === */
 palette.addEventListener('dragover', e => e.preventDefault());
 palette.addEventListener('drop', e => {
     e.preventDefault();
     const widId = e.dataTransfer.getData('widgetId');
     if (!widId) return;
 
-    const widget = document.getElementById(widId);
-    if (!widget) return;
+    const w = document.getElementById(widId);
+    const type = w?.dataset.module;
+    if (!w || !type) return;
 
-    const type = widget.dataset.module;
-    const block = blockFromType(type);
+    w.parentElement && (w.parentElement.innerHTML = '');  // clear slot
+    w.remove();
 
-    // remove widget from its slot
-    widget.parentElement.classList.add('empty');
-    widget.remove();
-    block.classList.remove('in-use');
+    const blk = findBlock(type);
+    blk && blk.classList.remove('in-use');
+
     saveLayout();
 });
 
-/* ---------- layout persistence ---------- */
+/* === persist === */
 function saveLayout() {
-    const layout = slots.map(s => {
-        if (s.classList.contains('empty')) return null;
-        return { slot: s.dataset.slot, type: s.firstElementChild.dataset.module };
-    });
+    const layout = slots.map(sl =>
+        slotIsEmpty(sl) ? null : { slot: sl.dataset.slot, type: sl.firstElementChild.dataset.module }
+    );
     localStorage.setItem('layout-v1', JSON.stringify(layout));
 }
 
-/* ---------- recreate layout on load ---------- */
-(function bootstrap() {
-    const parts = JSON.parse(localStorage.getItem('layout-v1') || '[]');
-    parts.forEach(p => {
-        const slot = document.querySelector(`.slot[data-slot="${p.slot}"]`);
-        const block = blockFromType(p.type);
-        if (!slot || !block) return;
+/* === bootstrap previous layout === */
+(function () {
+    const layout = JSON.parse(localStorage.getItem('layout-v1') || '[]');
+    layout.forEach(item => {
+        if (!item) return;
+        const slot = document.querySelector(`.slot[data-slot="${item.slot}"]`);
+        const block = findBlock(item.type);
+        if (!slot || !block || !slotIsEmpty(slot)) return;
 
-        const widget = window.modules[p.type]();
+        const widget = window.modules[item.type]();
         widget.id = `w-${crypto.randomUUID()}`;
-        widget.dataset.module = p.type;
-        makeWidgetDraggable(widget);
+        widget.dataset.module = item.type;
+        makeDraggable(widget, item.type);
 
-        slot.classList.remove('empty');
         slot.appendChild(widget);
         block.classList.add('in-use');
     });
