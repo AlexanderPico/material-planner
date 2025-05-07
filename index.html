@@ -1,29 +1,33 @@
 <!-- =================================================
-  Wooden Planner – Workbench Version (core modules)
-  Files in this bundle:
-    • index.html
-    • style.css (supersedes previous)
-    • wood.js      (unchanged from v2)
-    • modules.js   (new – defines five core widgets)
-    • workbench.js (new – palette + layout manager)
-  Note: calendar & checklist logic moved into modules.js; remove old app.js.
+  Wooden Planner – Drag‑and‑Drop Palette (v3)
+  2025‑05‑07
+  * Replaces modal workbench with a permanent wooden‑block palette on the left.
+  * HTML5 drag‑and‑drop lets users move blocks into/out of the panel.
+  * Blocks auto‑snap to the first empty slot and resize to fit.
 ================================================= -->
 <!doctype html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8" />
-    <title>Wooden Planner Workbench</title>
+    <title>Wooden Planner</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <!-- Gear enters workbench mode -->
-    <button id="gear" aria-label="Customize layout">⚙️</button>
+    <!-- Wood‑block palette -->
+    <aside id="palette">
+        <h2>Modules</h2>
+        <div class="block" data-type="calendar" draggable="true">📆 Calendar</div>
+        <div class="block" data-type="checklist" draggable="true">✅ Checklist</div>
+        <div class="block" data-type="habit" draggable="true">📍 Habits</div>
+        <div class="block" data-type="gauge" draggable="true">📈 Gauge</div>
+        <div class="block" data-type="pomodoro" draggable="true">⏱️ Timer</div>
+    </aside>
 
-    <!-- Main panel with named slots (TL/TR/BL/BR/FT) -->
-    <main id="panel">
+    <!-- Main wooden panel -->
+    <main id="panel" aria-label="Planner board">
         <div class="slot" data-slot="TL"></div>
         <div class="slot" data-slot="TR"></div>
         <div class="slot" data-slot="BL"></div>
@@ -31,25 +35,10 @@
         <div class="slot wide" data-slot="FT"></div>
     </main>
 
-    <!-- Workbench overlay -->
-    <div id="workbench" hidden>
-        <aside id="palette">
-            <h2>Add module</h2>
-            <ul>
-                <li><button data-type="calendar">Monthly Calendar</button></li>
-                <li><button data-type="checklist">Checklist</button></li>
-                <li><button data-type="habit">Habit Tracker</button></li>
-                <li><button data-type="gauge">Progress Gauge</button></li>
-                <li><button data-type="pomodoro">Pomodoro Timer</button></li>
-            </ul>
-            <button id="wb-exit" class="save">✓ Save & Exit</button>
-        </aside>
-    </div>
-
     <!-- scripts -->
     <script src="wood.js" defer></script>
     <script src="modules.js" defer></script>
-    <script src="workbench.js" defer></script>
+    <script src="dnd.js" defer></script>
 </body>
 
 </html>

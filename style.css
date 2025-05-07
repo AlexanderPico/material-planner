@@ -185,3 +185,56 @@ button {
 [hidden] {
     display: none !important;
 }
+
+/* ---- palette ---- */
+#palette {
+    background: #3c352e;
+    border-right: 6px solid #5d432c;
+    color: #faf9f7;
+    width: 160px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, .4);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+#palette h2 {
+    font-size: 1.1rem;
+    margin-bottom: .4rem;
+}
+
+.block {
+    background: #5d432c;
+    padding: .5rem;
+    border-radius: 8px;
+    cursor: grab;
+    user-select: none;
+    text-align: center;
+    font-size: .9rem;
+}
+
+.block:active {
+    cursor: grabbing;
+}
+
+/* shift board right */
+#panel {
+    margin-left: 180px;
+    /* palette width + gap */
+}
+
+/* slot hover cue for valid drop */
+.slot.drag-over {
+    outline: 3px dashed #fff;
+}
+
+/* make dropped widget fill slot area fully */
+.slot .widget {
+    width: 100%;
+    height: 100%;
+}
