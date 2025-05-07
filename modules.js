@@ -14,8 +14,7 @@
         calendar: (props) => root.calendar(props),
         checklist: (props) => root.checklist(props),
         habit: (props) => root.habit(props),
-        gauge: () => root.gauge(),
-        pomodoro: () => root.pomodoro()
+        gauge: () => root.gauge()
     };
 
     /* ---------- Calendar ---------- */
@@ -133,28 +132,6 @@
         // knob control
         const slider = document.createElement('input'); slider.type = 'range'; slider.min = 0; slider.max = 100; slider.value = val; slider.style.width = '80%'; cont.append(slider);
         slider.addEventListener('input', e => { val = +e.target.value; render(); save(key, val); });
-        return cont;
-    };
-
-    /* ---------- Pomodoro Timer ---------- */
-    root.pomodoro = () => {
-        const DEF = 25; let dur = DEF * 60; let remaining = dur; let running = false; let timer = null;
-        const key = 'pomo'; const saved = load(key, null); if (saved) { dur = saved.dur; remaining = saved.remaining; running = false; }
-        const cont = Object.assign(document.createElement('div'), { className: 'widget' });
-        cont.innerHTML = '<header>Pomodoro</header>';
-        const display = Object.assign(document.createElement('div'), { className: 'timer-display' }); cont.append(display);
-        const knob = document.createElement('input'); knob.type = 'range'; knob.min = 5; knob.max = 60; knob.value = dur / 60; cont.append(knob);
-        const btn = document.createElement('button'); btn.textContent = 'Start'; btn.style.marginTop = '.3rem'; cont.append(btn);
-        function fmt(sec) { const m = Math.floor(sec / 60), s = sec % 60; return `${pad(m)}:${pad(s)}`; }
-        function render() { display.textContent = fmt(remaining); } render();
-        knob.addEventListener('input', e => { if (running) return; dur = e.target.value * 60; remaining = dur; render(); save(key, { dur, remaining }); });
-        btn.addEventListener('click', () => {
-            if (running) { clearInterval(timer); running = false; btn.textContent = 'Start'; save(key, { dur, remaining }); return; }
-            running = true; btn.textContent = 'Stop'; timer = setInterval(() => {
-                if (--remaining <= 0) { clearInterval(timer); running = false; remaining = dur; btn.textContent = 'Start'; /* beep */ }
-                render();
-            }, 1000);
-        });
         return cont;
     };
 
