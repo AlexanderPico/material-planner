@@ -55,7 +55,7 @@ function handleSlotDrop(e, slot) {
 
     /* build widget */
     const widget = window.modules[type]();
-    widget.id = `w-${crypto.randomUUID()}`;
+    widget.id = `w-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     widget.dataset.module = type;
     makeDraggable(widget, type);
 
@@ -102,7 +102,7 @@ function saveLayout() {
         if (!slot || !block || !slotIsEmpty(slot)) return;
 
         const widget = window.modules[item.type]();
-        widget.id = `w-${crypto.randomUUID()}`;
+        widget.id = `w-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         widget.dataset.module = item.type;
         makeDraggable(widget, item.type);
 

@@ -11,11 +11,11 @@
 
     /* ---------- Modules ---------- */
     window.modules = {
-        calendar: buildCalendarWidget,
-        checklist: buildChecklistWidget,
-        habit: buildHabitWidget,
-        gauge: buildGaugeWidget,
-        pomodoro: buildPomodoroWidget
+        calendar: (props) => root.calendar(props),
+        checklist: (props) => root.checklist(props),
+        habit: (props) => root.habit(props),
+        gauge: () => root.gauge(),
+        pomodoro: () => root.pomodoro()
     };
 
     /* ---------- Calendar ---------- */
@@ -78,10 +78,10 @@
     /* ---------- Habit Tracker ---------- */
     root.habit = (props = {}) => {
         const month = new Date(); const key = yyyymm(month);
-        const habits = load(`habit-labels`, ['Habit 1', 'Habit 2', 'Habit 3']).slice(0, 3);
+        const habits = load(`habit-labels`, ['Habit 1', 'Habit 2', 'Habit 3']).slice(0, 3);
         const gridState = load(`habit-${key}`, {}); // { 'YYYY-MM-DD': [0,2] }
         const cont = Object.assign(document.createElement('div'), { className: 'widget' });
-        cont.innerHTML = '<header>Habit Tracker</header>';
+        cont.innerHTML = '<header>Habit Tracker</header>';
 
         // bins
         const bins = document.createElement('div'); bins.style.display = 'flex'; bins.style.gap = '.6rem'; bins.style.marginBottom = '.4rem';
