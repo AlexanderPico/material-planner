@@ -12,8 +12,8 @@
     <main id="panel">
         <header>
             <h1 id="month-label"></h1>
-            <button id="prev">&#9664;</button>
-            <button id="next">&#9654;</button>
+            <button id="prev" aria-label="Previous month">&#9664;</button>
+            <button id="next" aria-label="Next month">&#9654;</button>
         </header>
 
         <section id="calendar"></section>
@@ -27,6 +27,8 @@
         </section>
     </main>
 
+    <!-- new: generates procedural wood texture & exposes it via CSS var -->
+    <script src="wood.js" defer></script>
     <script src="app.js" defer></script>
 </body>
 

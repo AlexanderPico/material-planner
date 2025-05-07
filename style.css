@@ -15,13 +15,16 @@ body {
 
 /* ---- wooden panel ---- */
 #panel {
+    /* colour tokens remain – new: --panel-tex injected by wood.js */
     --plank: #8b6440;
     --grain1: #9d734d;
     --grain2: #7c5b3c;
     --edge: #5d432c;
-    background:
+    /* ↓ composite: procedural texture over gradient */
+    background: var(--panel-tex, none),
         repeating-linear-gradient(25deg, var(--grain1) 0 20px, var(--grain2) 20px 40px),
         var(--plank);
+    background-blend-mode: multiply, normal, normal;
     border: 6px solid var(--edge);
     border-radius: 18px;
     box-shadow: 0 8px 18px rgba(0, 0, 0, .6);
@@ -30,7 +33,6 @@ body {
     color: #faf9f7;
 }
 
-/* subtle depth on hover */
 #panel:hover {
     transform: perspective(900px) rotateX(2deg) rotateY(-2deg);
     transition: transform .4s ease;
