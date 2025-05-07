@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Wooden Planner Prototype</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <main id="panel">
+        <header>
+            <h1 id="month-label"></h1>
+            <button id="prev">&#9664;</button>
+            <button id="next">&#9654;</button>
+        </header>
+
+        <section id="calendar"></section>
+
+        <section id="checklist">
+            <h2>Checklist</h2>
+            <ul id="todo"></ul>
+            <form id="new-item-form">
+                <input id="new-item" placeholder="Add task…" autocomplete="off" />
+            </form>
+        </section>
+    </main>
+
+    <script src="app.js" defer></script>
+</body>
+
+</html>
