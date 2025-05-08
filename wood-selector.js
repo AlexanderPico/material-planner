@@ -1,88 +1,121 @@
 /**
  * Wooden Texture Selector
- * Controls the wooden dial interface for selecting different wood textures
+ * Controls the wood texture selection interface
  */
 
 (() => {
     // Constants
     const TEXTURE_PATH = './assets/wood/';
-    // Order matches the physical layout of dots, clockwise from top
-    const WOOD_TYPES = ['red_oak', 'white_oak', 'cherry', 'walnut', 'bamboo', 'beech', 'maple'];
-    const ROTATION_PER_WOOD = 360 / WOOD_TYPES.length; // 360 / 7 wood types ≈ 51.43 degrees each
+    // Order alphabetically for easier maintenance
+    const WOOD_TYPES = ['bamboo', 'beech', 'cherry', 'maple', 'oak', 'walnut'];
     
     // DOM elements
-    const dial = document.querySelector('.dial');
-    const dialContainer = document.querySelector('.dial-container');
+    const textureRing = document.querySelector('.texture-ring');
     const woodName = document.querySelector('.wood-name');
     const dots = document.querySelectorAll('.texture-dot');
     
     // State
     let currentIndex = 0;
-    let currentRotation = 0;
     
     // Expose current wood type globally
     window.getCurrentWoodType = () => WOOD_TYPES[currentIndex];
     window.getCurrentWoodPath = () => `${TEXTURE_PATH}${WOOD_TYPES[currentIndex]}.jpg`;
     
-    // Position dots evenly around the dial in a circle
+    // Position dots evenly around the ring
     function positionDots() {
-        // Get dial dimensions
-        const dialRect = dial.getBoundingClientRect();
-        const dialRadius = dialRect.width / 2;
-        const dotRadius = 8; // Half the dot width
+        // Get ring dimensions
+        const ringRect = textureRing.getBoundingClientRect();
+        const ringRadius = ringRect.width / 2;
+        const dotRadius = 20; // Half the dot width (40px total)
         
-        // Position each dot around the dial at equal angles
+        // Use a smaller circle to position dots more tightly
+        // Reduced to 0.5 for tighter grouping and overlapping effect
+        const circleRadius = ringRadius * 0.5; 
+        
+        // Position each dot around the ring at equal angles
         dots.forEach((dot, index) => {
             // Calculate angle in radians (subtract PI/2 to start at top)
             const angle = (index * (2 * Math.PI / WOOD_TYPES.length)) - (Math.PI / 2);
             
-            // Calculate position (distance from edge)
-            const distance = dialRadius - dotRadius - 5; // 5px from edge
-            const x = Math.cos(angle) * distance;
-            const y = Math.sin(angle) * distance;
+            // Calculate position using the adjusted circle radius
+            const x = Math.cos(angle) * circleRadius;
+            const y = Math.sin(angle) * circleRadius;
             
-            // Position dot relative to dial center
-            dot.style.position = 'absolute';
-            dot.style.left = `${dialRadius + x}px`;
-            dot.style.top = `${dialRadius + y}px`;
-            dot.style.transform = 'translate(-50%, -50%)';
+            // Calculate z-index to create proper stacking order (later dots on top)
+            // This creates the illusion of a stack of coasters
+            const zIndex = 5 + index;
+            dot.style.zIndex = index === currentIndex ? 20 : zIndex;
+            
+            // Position dot relative to ring center
+            // We need to adjust for the dot's size to center it precisely
+            dot.style.left = `${ringRadius + x - dotRadius}px`;
+            dot.style.top = `${ringRadius + y - dotRadius}px`;
+            
+            // Apply a slight rotation based on position to enhance 3D appearance
+            // This creates the effect of dots facing the center
+            const rotationDeg = Math.atan2(y, x) * (180 / Math.PI) + 90;
+            // Add slight offset for each dot to create staggered appearance
+            const offsetZ = index * 1; // 1px offset per dot for subtle stacking
+            dot.style.transform = `rotate(${rotationDeg}deg) translateZ(${offsetZ}px)`;
+            
+            // Set data attribute for wood type to ensure it matches the array
+            dot.setAttribute('data-wood', WOOD_TYPES[index]);
+            
+            // Set background image directly to ensure it matches
+            dot.style.backgroundImage = `url(${TEXTURE_PATH}${WOOD_TYPES[index]}.jpg)`;
+            
+            // Add click handler to each dot
+            dot.addEventListener('click', () => selectWoodType(index));
         });
+        
+        // Update active dot after positioning
+        updateActiveDot();
+    }
+    
+    // Select a wood type by index
+    function selectWoodType(index) {
+        if (index === currentIndex) return;
+        
+        currentIndex = index;
+        
+        // Update wood name
+        woodName.textContent = formatWoodName(WOOD_TYPES[currentIndex]);
+        
+        // Set wood texture
+        setWoodTexture(WOOD_TYPES[currentIndex]);
+        
+        // Update active dot
+        updateActiveDot();
+        
+        // Play sound
+        playWoodSound();
     }
     
     // Format wood type for display
     function formatWoodName(woodType) {
-        // Convert underscored names to space-separated and capitalize each word
-        return woodType.split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
+        // Capitalize the first letter of the wood type
+        return woodType.charAt(0).toUpperCase() + woodType.slice(1);
     }
     
     // Initialize from localStorage
     function init() {
         const savedWood = localStorage.getItem('woodSpecies');
         if (savedWood) {
-            // Handle legacy 'oak' value by converting to 'red_oak'
-            const adjustedSavedWood = savedWood === 'oak' ? 'red_oak' : savedWood;
-            currentIndex = WOOD_TYPES.indexOf(adjustedSavedWood);
-            if (currentIndex === -1) currentIndex = 0; // Default to red_oak if not found
+            const savedIndex = WOOD_TYPES.indexOf(savedWood);
+            if (savedIndex !== -1) {
+                currentIndex = savedIndex;
+            }
         }
         
-        // Position dots when layout is ready
-        setTimeout(positionDots, 0);
+        // Position dots after a small delay to ensure DOM is ready
+        setTimeout(positionDots, 100);
         
-        updateDial(false); // Initialize without animation
+        // Initialize with the current wood type
+        woodName.textContent = formatWoodName(WOOD_TYPES[currentIndex]);
+        setWoodTexture(WOOD_TYPES[currentIndex]);
         
-        // Add event listeners
-        dial.addEventListener('click', rotateClockwise);
-        dial.addEventListener('contextmenu', e => {
-            e.preventDefault();
-            rotateCounterClockwise();
-        });
-        
+        // Add keyboard handlers for arrow keys
         document.addEventListener('keydown', handleKeyPress);
-        
-        // Highlight the active dot
-        updateActiveDot();
         
         // Dispatch event that wood selector is ready
         document.dispatchEvent(new CustomEvent('woodSelectorReady', {
@@ -93,67 +126,33 @@
         window.addEventListener('resize', positionDots);
     }
     
-    // Key press handler
+    // Key press handler for arrow keys
     function handleKeyPress(e) {
         if (e.key === 'ArrowRight') {
-            rotateClockwise();
+            selectWoodType((currentIndex + 1) % WOOD_TYPES.length);
         } else if (e.key === 'ArrowLeft') {
-            rotateCounterClockwise();
+            selectWoodType((currentIndex - 1 + WOOD_TYPES.length) % WOOD_TYPES.length);
         }
-    }
-    
-    // Rotate clockwise to next wood type
-    function rotateClockwise() {
-        currentIndex = (currentIndex + 1) % WOOD_TYPES.length;
-        updateDial();
-    }
-    
-    // Rotate counter-clockwise to previous wood type
-    function rotateCounterClockwise() {
-        currentIndex = (currentIndex - 1 + WOOD_TYPES.length) % WOOD_TYPES.length;
-        updateDial();
-    }
-    
-    // Update the dial position and wood texture
-    function updateDial(animate = true) {
-        const woodType = WOOD_TYPES[currentIndex];
-        
-        // Calculate rotation to position the selected wood at the top (0 degrees)
-        // We need to calculate the opposite rotation to move the selected wood to the top
-        // Formula: negative index * angle per wood type
-        currentRotation = -currentIndex * ROTATION_PER_WOOD;
-        
-        if (animate) {
-            dial.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        } else {
-            dial.style.transition = 'none';
-        }
-        dial.style.transform = `rotate(${currentRotation}deg)`;
-        
-        // Update wood name
-        woodName.textContent = formatWoodName(woodType);
-        
-        // Set wood texture
-        setWoodTexture(woodType);
-        
-        // Update active dot
-        updateActiveDot();
-        
-        // Play woodblock sound if animate is true
-        if (animate) {
-            playWoodSound();
-        }
-        
-        // Dispatch custom event for wood change
-        document.dispatchEvent(new CustomEvent('woodTypeChanged', {
-            detail: { woodType }
-        }));
     }
     
     // Update the active dot
     function updateActiveDot() {
         // Remove active class from all dots
-        dots.forEach(dot => dot.classList.remove('active'));
+        dots.forEach((dot, index) => {
+            dot.classList.remove('active');
+            
+            // Reset the transform for non-active dots to keep proper positioning
+            if (index !== currentIndex) {
+                const angle = (index * (2 * Math.PI / WOOD_TYPES.length)) - (Math.PI / 2);
+                const x = Math.cos(angle);
+                const y = Math.sin(angle);
+                const rotationDeg = Math.atan2(y, x) * (180 / Math.PI) + 90;
+                const offsetZ = index * 1; // maintain the staggered appearance
+                dot.style.transform = `rotate(${rotationDeg}deg) translateZ(${offsetZ}px)`;
+                // Make sure z-index is set correctly
+                dot.style.zIndex = 5 + index;
+            }
+        });
         
         // Find the active dot by wood type
         const activeDot = document.querySelector(`.texture-dot[data-wood="${WOOD_TYPES[currentIndex]}"]`);
@@ -161,6 +160,17 @@
         if (activeDot) {
             // Add active class to highlight it
             activeDot.classList.add('active');
+            
+            // Enhance 3D effect for active dot - lift it higher
+            const index = currentIndex;
+            const angle = (index * (2 * Math.PI / WOOD_TYPES.length)) - (Math.PI / 2);
+            const x = Math.cos(angle);
+            const y = Math.sin(angle);
+            const rotationDeg = Math.atan2(y, x) * (180 / Math.PI) + 90;
+            // Lift the active dot higher (10px) and scale it for emphasis
+            activeDot.style.transform = `rotate(${rotationDeg}deg) translateZ(10px) scale(1.1)`;
+            // Ensure active dot is always on top
+            activeDot.style.zIndex = 20;
             
             // Log for debugging
             console.log(`Activated wood type: ${WOOD_TYPES[currentIndex]}`);
@@ -178,7 +188,7 @@
         );
         
         // Update elements that use the wood texture
-        document.querySelectorAll('.block, .widget, .dial').forEach(element => {
+        document.querySelectorAll('.block, .widget').forEach(element => {
             element.style.backgroundImage = `url(${TEXTURE_PATH}${woodType}.jpg)`;
         });
         
@@ -190,9 +200,14 @@
         
         // Save preference
         localStorage.setItem('woodSpecies', woodType);
+        
+        // Dispatch custom event for wood change
+        document.dispatchEvent(new CustomEvent('woodTypeChanged', {
+            detail: { woodType }
+        }));
     }
     
-    // Play a wooden sound effect when rotating the dial
+    // Play a wooden sound effect
     function playWoodSound() {
         if (!window.AudioContext) return;
         
@@ -217,11 +232,6 @@
         } catch (e) {
             console.warn('Could not play wood sound:', e);
         }
-    }
-    
-    // Helper function to capitalize the first letter
-    function capitalizeFirstLetter(string) {
-        return string.charAt(0).toUpperCase() + string.slice(1);
     }
     
     // Initialize when the DOM is loaded

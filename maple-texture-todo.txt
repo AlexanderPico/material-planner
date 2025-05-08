@@ -1,1 +1,0 @@
-Note: Need to create a maple.jpg wood texture (currently missing in the assets/wood directory).

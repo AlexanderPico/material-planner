@@ -1,12 +1,9 @@
 <!-- =================================================
-  Wooden Planner – Tangible Wood Block Interface (v4)
-  2025‑05‑10
-  * Enhanced physical interaction model with realistic wooden blocks
-  * Blocks physically disappear from palette when placed on board
-  * Visual feedback with hover effects, shadows, and wood grain texture
-  * Tactile animations for placement and removal of widgets
-  * Sound effects for wooden block interactions
-  * Improved drag-and-drop highlighting for valid drop targets
+  Wooden Planner – Tangible Wood Block Interface (v5)
+  2025‑05‑07
+  * Redesigned wood selector with 3D coaster-like texture dots
+  * Rich shadow effects and depth perception for wood texture selection
+  * Tighter grouping of wood textures for more intuitive selection
 ================================================= -->
 
 <!doctype html>
@@ -40,19 +37,15 @@
     <!-- Wood texture selector -->
     <aside id="wood-selector">
         <h2>Wood Texture</h2>
-        <div class="dial-container">
-            <div class="dial-arrow"></div>
-            <div class="dial" tabindex="0">
-                <div class="texture-dot" data-wood="red_oak"></div>
-                <div class="texture-dot" data-wood="white_oak"></div>
-                <div class="texture-dot" data-wood="cherry"></div>
-                <div class="texture-dot" data-wood="walnut"></div>
-                <div class="texture-dot" data-wood="bamboo"></div>
-                <div class="texture-dot" data-wood="beech"></div>
-                <div class="texture-dot" data-wood="maple"></div>
-            </div>
+        <div class="texture-ring">
+            <div class="texture-dot" data-wood="bamboo"></div>
+            <div class="texture-dot" data-wood="beech"></div>
+            <div class="texture-dot" data-wood="cherry"></div>
+            <div class="texture-dot" data-wood="maple"></div>
+            <div class="texture-dot" data-wood="oak"></div>
+            <div class="texture-dot" data-wood="walnut"></div>
         </div>
-        <div class="wood-name">Red Oak</div>
+        <div class="wood-name">Bamboo</div>
     </aside>
 
     <!-- scripts -->
