@@ -165,7 +165,6 @@ button {
     border: 3px solid var(--wood-dark);
     padding: 1rem;
     transform-style: preserve-3d;
-    transform: perspective(800px) rotateX(2deg); /* Match tile's flat appearance */
     transform-origin: center bottom;
 }
 

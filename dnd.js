@@ -284,3 +284,7 @@ function applyLiftingAnimation(widget, callback) {
         if (callback) callback();
     }, { once: true });
 }
+
+// Expose audio functions globally
+window.initAudio = initAudio;
+window.playWoodSound = playWoodSound;

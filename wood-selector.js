@@ -65,7 +65,13 @@
             dot.style.backgroundImage = `url(${TEXTURE_PATH}${WOOD_TYPES[index]}.jpg)`;
             
             // Add click handler to each dot
-            dot.addEventListener('click', () => selectWoodType(index));
+            dot.addEventListener('click', () => {
+                // Also initialize audio on click
+                if (window.initAudio) {
+                    window.initAudio();
+                }
+                selectWoodType(index);
+            });
         });
         
         // Update active dot after positioning
@@ -200,6 +206,15 @@
     
     // Play a wooden sound effect
     function playWoodSound() {
+        // Use the shared audio system from dnd.js if available
+        if (window.playWoodSound) {
+            // Calculate frequency based on current wood type
+            const frequency = 200 + currentIndex * 30;
+            window.playWoodSound(frequency, 0.15);
+            return;
+        }
+        
+        // Fallback to local implementation if shared audio is not available
         if (!window.AudioContext) return;
         
         try {
@@ -227,7 +242,18 @@
     
     // Initialize audio on user interaction to comply with autoplay policies
     function setupAudioInitialization() {
-        document.addEventListener('click', initAudio, {once: true});
+        // Use the shared audio initialization if available
+        if (window.initAudio) {
+            // We don't need to do anything here, as initAudio is already set up in dnd.js
+            console.log("Using shared audio initialization from dnd.js");
+        } else {
+            // Fallback to local audio initialization
+            function initAudio() {
+                console.log("Local audio initialization in wood-selector.js");
+            }
+            
+            document.addEventListener('click', initAudio, {once: true});
+        }
     }
     
     // Initialize when the DOM is loaded
