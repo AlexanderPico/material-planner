@@ -114,9 +114,6 @@
         woodName.textContent = formatWoodName(WOOD_TYPES[currentIndex]);
         setWoodTexture(WOOD_TYPES[currentIndex]);
         
-        // Add keyboard handlers for arrow keys
-        document.addEventListener('keydown', handleKeyPress);
-        
         // Dispatch event that wood selector is ready
         document.dispatchEvent(new CustomEvent('woodSelectorReady', {
             detail: { woodType: WOOD_TYPES[currentIndex] }
@@ -124,15 +121,9 @@
         
         // Reposition dots when window is resized
         window.addEventListener('resize', positionDots);
-    }
-    
-    // Key press handler for arrow keys
-    function handleKeyPress(e) {
-        if (e.key === 'ArrowRight') {
-            selectWoodType((currentIndex + 1) % WOOD_TYPES.length);
-        } else if (e.key === 'ArrowLeft') {
-            selectWoodType((currentIndex - 1 + WOOD_TYPES.length) % WOOD_TYPES.length);
-        }
+        
+        // Setup audio initialization
+        setupAudioInitialization();
     }
     
     // Update the active dot
@@ -232,6 +223,11 @@
         } catch (e) {
             console.warn('Could not play wood sound:', e);
         }
+    }
+    
+    // Initialize audio on user interaction to comply with autoplay policies
+    function setupAudioInitialization() {
+        document.addEventListener('click', initAudio, {once: true});
     }
     
     // Initialize when the DOM is loaded

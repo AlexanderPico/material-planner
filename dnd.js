@@ -82,6 +82,7 @@ function playRemoveSound() {
 // Initialize audio on first user interaction to satisfy browser autoplay policies
 document.addEventListener('click', initAudio, {once: true});
 document.addEventListener('keydown', initAudio, {once: true});
+document.addEventListener('mousedown', initAudio, {once: true});
 
 /* === Drag & Drop === */
 

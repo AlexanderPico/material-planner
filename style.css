@@ -238,11 +238,189 @@ button {
     background: rgba(255, 255, 255, .07);
     border-radius: 6px;
     font-size: .8rem;
+    cursor: pointer;
+    position: relative;
+    transform: none !important; /* Prevent tilting effect on days */
 }
 
 .day.closed {
     background: rgba(0, 0, 0, .55);
     text-decoration: line-through;
+}
+
+/* Highlight days with events in light red */
+.day.has-events {
+    color: rgba(255, 130, 130, 1); /* Light red color */
+    font-weight: bold;
+}
+
+/* Day tooltip styles */
+.day-tooltip {
+    position: absolute;
+    background: rgba(30, 30, 30, 0.9);
+    color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    min-width: 180px;
+    max-width: 250px;
+    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    font-size: 0.85rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    bottom: 105%;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Add constraints to keep tooltip within viewport */
+    max-width: min(250px, 90vw);
+}
+
+/* Fix for tooltips on the left edge */
+.calendar-grid div:nth-child(7n+1) .day-tooltip,  /* First column (Sunday) */
+.calendar-grid div:nth-child(7n+2) .day-tooltip { /* Second column (Monday) */
+    left: 0;
+    transform: translateX(0);
+}
+
+/* Fix for tooltips on the right edge */
+.calendar-grid div:nth-child(7n) .day-tooltip,   /* Last column (Saturday) */
+.calendar-grid div:nth-child(7n-1) .day-tooltip { /* Second-last column (Friday) */
+    left: auto;
+    right: 0;
+    transform: translateX(0);
+}
+
+.day-tooltip.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.day-tooltip.editable {
+    pointer-events: auto;
+    z-index: 200;
+    opacity: 1 !important; /* Force visibility when editable */
+}
+
+/* Overlay for modal edit mode */
+.day-tooltip.editable::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: -1;
+    pointer-events: all;
+}
+
+.day-tooltip textarea {
+    width: 100%;
+    min-height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 8px;
+    border-radius: 4px;
+    resize: vertical;
+    position: relative; /* Add position relative */
+    z-index: 10; /* Ensure it's above other elements */
+    transform: translate3d(0, 0, 0); /* Force hardware acceleration */
+    user-select: text; /* Explicitly enable text selection */
+}
+
+.day-tooltip .tooltip-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    gap: 8px;
+}
+
+.day-tooltip button {
+    background: rgba(60, 60, 60, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex: 1;
+    position: relative; /* Add position relative */
+    z-index: 10; /* Ensure buttons are above other elements */
+    pointer-events: auto !important; /* Ensure the buttons receive clicks */
+}
+
+.day-tooltip button:hover {
+    background: rgba(80, 80, 80, 0.8);
+}
+
+.day-tooltip button.save {
+    background: rgba(30, 150, 70, 0.8);
+}
+
+.day-tooltip button.save:hover {
+    background: rgba(40, 180, 90, 0.8);
+}
+
+/* Calendar widget controls */
+.calendar-controls {
+    position: absolute;
+    top: 5px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+}
+
+.calendar-controls button {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 5px;
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+.calendar-controls button:hover {
+    color: rgba(255, 255, 255, 1);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.calendar-controls .trash {
+    margin-left: 10px;
+}
+
+.calendar-controls .help {
+    margin-right: 10px;
+}
+
+.help-tooltip {
+    position: absolute;
+    top: 35px;
+    right: 10px;
+    background: rgba(30, 30, 30, 0.9);
+    color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    width: 200px;
+    z-index: 100;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.help-tooltip.visible {
+    opacity: 1;
 }
 
 .habit-hole {
@@ -430,6 +608,39 @@ button {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+/* Prevent tilt effect when interacting with elements inside the widget */
+.day:active,
+.day-tooltip:active,
+.day-tooltip textarea:active,
+.day-tooltip button:active,
+.calendar-controls button:active,
+.widget .day:active ~ .widget,
+.widget:has(.day-tooltip.visible):active,
+.widget:has(.day-tooltip.editable):active,
+.widget:has(.calendar-controls button:active):active {
+    transform: perspective(800px) rotateX(2deg) !important;
+    box-shadow: 
+        0 8px 16px rgba(0, 0, 0, 0.4),
+        inset 0 1px 3px rgba(255, 255, 255, 0.2) !important;
+    transition: none !important;
+    cursor: default;
+}
+
+/* Additional fix for tooltip positioning */
+.widget:has(.day-tooltip.centered) {
+    pointer-events: auto;
+    cursor: default;
+    transform: none !important; /* Prevent any transform on the widget */
+}
+
+.day-tooltip.centered button,
+.day-tooltip.centered textarea {
+    position: relative;
+    z-index: 300;
+    pointer-events: auto !important; /* Ensure the buttons receive clicks */
+    transform: translate3d(0, 0, 0); /* Force hardware acceleration */
+}
+
 /* Animation for receiving a widget */
 .receiving {
     animation: receive-widget 0.3s ease-out;
@@ -606,4 +817,23 @@ button {
     padding: 0.5rem 1rem;
     border-radius: 6px;
     min-width: 100px;
+}
+
+/* For tooltips that must be centered in the widget */
+.day-tooltip.centered {
+    position: fixed; /* Change to fixed to prevent shifting */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-height: 140px;
+    max-height: 80%;
+    overflow: auto;
+    z-index: 250;
+    margin: 0;
+    width: auto;
+    max-width: 90%;
+    pointer-events: auto; /* Ensure it receives pointer events */
+    will-change: transform; /* Optimize for animations/transitions */
+    backface-visibility: hidden; /* Prevent flickering */
+    transform-style: preserve-3d; /* Maintain 3D context */
 }
