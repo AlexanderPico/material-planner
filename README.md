@@ -11,7 +11,7 @@ A beautiful, minimalist wooden planning board for organizing your life. Dragable
 - Sound effects triggered by user interaction
 
 ## Version History
-### v1.0.0 (2025-05-05)
+### v1.0.0 (2025-05-09)
 - TBD
 
 ## Usage
