@@ -1,3 +1,9 @@
+/**
+ * Module Drag and Drop - Handles the drag-and-drop functionality and widget placement
+ */
+
+import { modules } from './modules.js';
+
 /* === DOM refs === */
 const palette = document.getElementById('palette');
 const tiles = [...palette.querySelectorAll('.tile')];
@@ -177,7 +183,7 @@ function handleSlotDrop(e, slot) {
     if (!srcTile || !slotIsEmpty(slot)) return;
 
     /* build widget */
-    const widget = window.modules[type]();
+    const widget = modules[type]();
     widget.id = `w-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     widget.dataset.module = type;
     makeDraggable(widget, type);
@@ -247,7 +253,7 @@ function saveLayout() {
 }
 
 /* === bootstrap previous layout === */
-(function () {
+document.addEventListener('DOMContentLoaded', () => {
     const layout = JSON.parse(localStorage.getItem('layout-v1') || '[]');
     layout.forEach(item => {
         if (!item) return;
@@ -255,7 +261,7 @@ function saveLayout() {
         const tile = findTile(item.type);
         if (!slot || !tile || !slotIsEmpty(slot)) return;
 
-        const widget = window.modules[item.type]();
+        const widget = modules[item.type]();
         widget.id = `w-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
         widget.dataset.module = item.type;
         makeDraggable(widget, item.type);
@@ -263,7 +269,7 @@ function saveLayout() {
         slot.appendChild(widget);
         tile.style.display = 'none'; // Hide the tile completely
     });
-})();
+});
 
 // Initialize tiles with current wood texture when page loads
 document.addEventListener('DOMContentLoaded', () => {
@@ -287,4 +293,4 @@ function applyLiftingAnimation(widget, callback) {
 
 // Expose audio functions globally
 window.initAudio = initAudio;
-window.playWoodSound = playWoodSound;
+window.playWoodSound = playWoodSound; 

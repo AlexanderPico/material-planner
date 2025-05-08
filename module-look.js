@@ -1,4 +1,25 @@
-import { Noise } from 'https://cdn.jsdelivr.net/npm/@chriscourses/simplex-noise/+esm';
+/**
+ * Module Look - Handles wood textures and appearance
+ */
+
+// Simple noise implementation to avoid CDN dependencies
+class SimpleNoise {
+    constructor() {
+        this.seed = Math.random() * 10000;
+    }
+    
+    // Simple 2D noise function - not as good as simplex but works for our wood texture
+    noise2D(x, y) {
+        // Use a simple algorithm that gives decent random noise
+        const X = Math.floor(x) & 255;
+        const Y = Math.floor(y) & 255;
+        const value = Math.sin(X * 12.9898 + Y * 78.233 + this.seed) * 43758.5453;
+        return (value - Math.floor(value)) * 2 - 1;
+    }
+}
+
+// Use our SimpleNoise as a fallback
+const Noise = SimpleNoise;
 
 const TEXTURE_PATH = 'assets/wood/';        // GH Pages folder
 
@@ -37,3 +58,7 @@ if (saved) {
 } else {
     genWood();             // Tier‑0/Tier‑1 until user picks real species
 }
+
+// Expose current wood type globally for compatibility with other modules
+window.getCurrentWoodType = () => saved || 'procedural';
+window.getCurrentWoodPath = () => saved ? `${TEXTURE_PATH}${saved}.jpg` : ''; 

@@ -1,5 +1,5 @@
 <!-- =================================================
-  Wooden Planner – Tangible Wood Block Interface (v0.7)
+  Wooden Planner – Tangible Wood Block Interface (v1.2.0)
   2025‑05‑08
   * Fixed AudioContext warnings by improving audio initialization
   * Removed arrow key controls from wood selector for better UX
@@ -69,9 +69,10 @@
     </aside>
 
     <!-- scripts -->
-    <script src="modules.js" defer></script>
-    <script src="dnd.js" defer></script>
-    <script src="wood-selector.js" defer></script>
+    <script src="modules.js" type="module"></script>
+    <script src="module-dnd.js" type="module"></script>
+    <script src="module-look.js" type="module"></script>
+    <script src="settings/wood-selector.js" type="module"></script>
 </body>
 
 </html>
