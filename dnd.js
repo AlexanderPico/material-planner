@@ -1,10 +1,10 @@
 /* === DOM refs === */
 const palette = document.getElementById('palette');
-const blocks = [...palette.querySelectorAll('.block')];
+const tiles = [...palette.querySelectorAll('.tile')];
 const slots = [...document.querySelectorAll('.slot')];
 
 /* === helpers === */
-const findBlock = type => document.querySelector(`.block[data-module="${type}"]`);
+const findTile = type => document.querySelector(`.tile[data-module="${type}"]`);
 const slotIsEmpty = slot => !slot.firstElementChild;
 
 // Apply current wood texture to elements
@@ -103,9 +103,9 @@ function makeDraggable(node, type) {
     });
 }
 
-// Make palette blocks draggable
-blocks.forEach(b => {
-    makeDraggable(b, b.dataset.module);
+// Make palette tiles draggable
+tiles.forEach(t => {
+    makeDraggable(t, t.dataset.module);
 });
 
 // Setup slots as drop targets
@@ -129,10 +129,10 @@ slots.forEach(slot => {
 
 // Listen for wood texture changes
 document.addEventListener('woodTypeChanged', (e) => {
-    // Update all blocks with the new wood texture
+    // Update all tiles with the new wood texture
     const woodPath = `./assets/wood/${e.detail.woodType}.jpg`;
-    document.querySelectorAll('.block').forEach(block => {
-        block.style.backgroundImage = `url(${woodPath})`;
+    document.querySelectorAll('.tile').forEach(tile => {
+        tile.style.backgroundImage = `url(${woodPath})`;
     });
 });
 
@@ -148,30 +148,32 @@ function handleSlotDrop(e, slot) {
         if (!w || slot === w.parentElement || !slotIsEmpty(slot)) return;
 
         /* update palette */
-        const oldBlock = findBlock(w.dataset.module);
-        oldBlock && (oldBlock.style.display = ''); // Make the block visible again
+        const oldTile = findTile(w.dataset.module);
+        oldTile && (oldTile.style.display = ''); // Make the tile visible again
 
-        // Add placement animation effect
+        // Only add background highlight to slot, not animation to widget
         slot.classList.add('receiving');
         setTimeout(() => slot.classList.remove('receiving'), 300);
         
         // Play "thunk" sound with Web Audio API
         playPlaceSound();
         
+        // Move the widget to the new slot
         slot.appendChild(w);
+        
         // Apply current wood texture
         applyCurrentWoodTexture([w]);
         
-        const newBlock = findBlock(type);
-        newBlock && (newBlock.style.display = 'none'); // Hide the block
+        const newTile = findTile(type);
+        newTile && (newTile.style.display = 'none'); // Hide the tile
         saveLayout();
         return;
     }
 
-    /* --- place a fresh block ----------------------------------- */
+    /* --- place a fresh tile ----------------------------------- */
     if (!type || !slotIsEmpty(slot)) return;
-    const srcBlock = findBlock(type);
-    if (!srcBlock || !slotIsEmpty(slot)) return;
+    const srcTile = findTile(type);
+    if (!srcTile || !slotIsEmpty(slot)) return;
 
     /* build widget */
     const widget = window.modules[type]();
@@ -182,15 +184,17 @@ function handleSlotDrop(e, slot) {
     // Apply current wood texture 
     applyCurrentWoodTexture([widget]);
 
-    // Add placement animation effect
+    // Only add background highlight to slot, not animation to widget
     slot.classList.add('receiving');
     setTimeout(() => slot.classList.remove('receiving'), 300);
-
+    
     // Play "thunk" sound with Web Audio API
     playPlaceSound();
 
+    // Append the widget
     slot.appendChild(widget);
-    srcBlock.style.display = 'none'; // Hide the block completely
+    
+    srcTile.style.display = 'none'; // Hide the tile completely
     saveLayout();
 }
 
@@ -212,13 +216,25 @@ palette.addEventListener('drop', e => {
     // Play "knock" sound with Web Audio API
     playRemoveSound();
 
-    w.parentElement && (w.parentElement.innerHTML = '');  // clear slot
-    w.remove();
-
-    const blk = findBlock(type);
-    blk && (blk.style.display = ''); // Make the block visible again
-
-    saveLayout();
+    // Get the parent slot before removing the widget
+    const parentSlot = w.parentElement;
+    
+    // Apply lifting animation before removing
+    applyLiftingAnimation(w, () => {
+        // Clear the slot after animation completes
+        if (parentSlot) {
+            parentSlot.innerHTML = '';
+        }
+        
+        // Make the tile visible again
+        const tile = findTile(type);
+        if (tile) {
+            tile.style.display = '';
+        }
+        
+        // Save the layout
+        saveLayout();
+    });
 });
 
 /* === persist layout === */
@@ -235,8 +251,8 @@ function saveLayout() {
     layout.forEach(item => {
         if (!item) return;
         const slot = document.querySelector(`.slot[data-slot="${item.slot}"]`);
-        const block = findBlock(item.type);
-        if (!slot || !block || !slotIsEmpty(slot)) return;
+        const tile = findTile(item.type);
+        if (!slot || !tile || !slotIsEmpty(slot)) return;
 
         const widget = window.modules[item.type]();
         widget.id = `w-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -244,14 +260,26 @@ function saveLayout() {
         makeDraggable(widget, item.type);
 
         slot.appendChild(widget);
-        block.style.display = 'none'; // Hide the block completely
+        tile.style.display = 'none'; // Hide the tile completely
     });
 })();
 
-// Initialize blocks with current wood texture when page loads
+// Initialize tiles with current wood texture when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    // Apply texture to blocks once wood selector is ready
+    // Apply texture to tiles once wood selector is ready
     document.addEventListener('woodSelectorReady', () => {
-        applyCurrentWoodTexture(blocks);
+        applyCurrentWoodTexture(tiles);
     });
 });
+
+// Apply lifting animation to a widget before removing it
+function applyLiftingAnimation(widget, callback) {
+    // Add the lifting class to trigger the animation
+    widget.classList.add('lifting');
+    
+    // Remove the widget after animation completes
+    widget.addEventListener('animationend', () => {
+        widget.classList.remove('lifting');
+        if (callback) callback();
+    }, { once: true });
+}

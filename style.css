@@ -98,17 +98,29 @@ button {
 
 #palette {
     background: #3c352e;
-    padding: 1.2rem 1.6rem;
-    border-radius: 12px;
-    width: 260px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, .6);
+    border-right: 6px solid #5d432c;
+    color: #faf9f7;
+    width: 180px;
+    padding: 1.5rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.2rem;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, .4);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    overflow-y: auto;
 }
 
 #palette h2 {
     font-size: 1.1rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+    color: #f1e7d0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 #palette ul {
@@ -140,21 +152,25 @@ button {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: .4rem;
+    gap: .8rem;
     box-shadow: 
         0 8px 16px rgba(0, 0, 0, 0.4),
         inset 0 1px 3px rgba(255, 255, 255, 0.2);
     border-radius: 8px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     position: relative;
     overflow: hidden;
     background-image: var(--wood-url);
     background-size: cover;
     border: 3px solid var(--wood-dark);
-    padding: 0.5rem;
+    padding: 1rem;
+    transform-style: preserve-3d;
+    transform: perspective(800px) rotateX(2deg); /* Match tile's flat appearance */
+    transform-origin: center bottom;
 }
 
 /* Add wood grain effect to widgets */
+.widget .grain, 
 .widget::after {
     content: '';
     position: absolute;
@@ -183,14 +199,27 @@ button {
     z-index: -1;
 }
 
-.widget header {
+.widget header, 
+.widget .carved-text,
+.widget span {
     font-weight: 600;
     margin-bottom: .3rem;
     color: #fff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 0.3rem 0.6rem;
+    background-color: rgba(0, 0, 0, 0.15);
+    padding: 0.4rem 0.8rem;
     border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        inset 0 1px 3px rgba(0, 0, 0, 0.8),
+        0 1px 0 rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 
+        0 -1px 1px rgba(0, 0, 0, 0.8),
+        0 1px 0 rgba(255, 255, 255, 0.2);
+    letter-spacing: 1px;
+    position: relative;
+    transform: translateZ(2px); /* Subtle lift */
 }
 
 /* specific quick visuals */
@@ -251,56 +280,52 @@ button {
     display: none !important;
 }
 
-/* ---- palette ---- */
-#palette {
-    background: #3c352e;
-    border-right: 6px solid #5d432c;
-    color: #faf9f7;
-    width: 160px;
-    padding: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: .6rem;
-    box-shadow: 4px 0 12px rgba(0, 0, 0, .4);
-    height: 100vh;
-    position: fixed;
-    left: 0;
-    top: 0;
-}
-
-#palette h2 {
-    font-size: 1.1rem;
-    margin-bottom: .4rem;
-}
-
-.block {
+.tile {
     background: var(--wood-medium);
-    padding: 1rem .5rem;
-    border-radius: 8px;
+    width: 130px;
+    height: 130px; /* Make tiles square */
+    border-radius: 6px;
     cursor: grab;
     user-select: none;
     text-align: center;
-    font-size: .9rem;
+    font-size: 1rem;
     box-shadow: 
-        0 6px 10px rgba(0, 0, 0, 0.4),
+        0 3px 6px rgba(0, 0, 0, 0.3),
         inset 0 1px 2px rgba(255, 255, 255, 0.2);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: 2px solid var(--wood-dark);
     position: relative;
-    margin-bottom: 1.2rem;
-    height: 70px;
+    margin-bottom: 1.5rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     background-image: var(--wood-url);
     background-size: cover;
-    color: #fff;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-    transform: translateY(0);
+    transform: perspective(800px) rotateX(2deg); /* Appears almost flat on the surface */
+    transform-style: preserve-3d;
+    transform-origin: center bottom; /* Set origin to bottom for a natural lift */
 }
 
-/* Add wood grain effect to blocks */
-.block::after {
+/* Add subtle edge to create tile effect */
+.tile::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 6px; /* Thinner than cube for a tile appearance */
+    background-color: var(--wood-dark);
+    transform-origin: top;
+    transform: rotateX(-90deg);
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    background-image: linear-gradient(90deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 20%, rgba(0,0,0,0.1) 80%, rgba(0,0,0,0.4) 100%);
+    opacity: 0.8; /* Subtle edge */
+}
+
+/* Wood grain overlay */
+.tile .grain {
     content: '';
     position: absolute;
     top: 0;
@@ -314,17 +339,60 @@ button {
     mix-blend-mode: overlay;
 }
 
-.block:hover {
-    transform: translateY(-6px);
+/* Carved/inlaid text effect for tiles */
+.tile span {
+    font-family: 'Palatino', serif;
+    font-weight: bold;
+    display: inline-block;
+    padding: 8px 12px;
+    position: relative;
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.3);
     box-shadow: 
-        0 12px 20px rgba(0, 0, 0, 0.5),
+        inset 0 1px 3px rgba(0, 0, 0, 0.8),
+        0 1px 0 rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 
+        0 -1px 1px rgba(0, 0, 0, 0.8),
+        0 1px 0 rgba(255, 255, 255, 0.2);
+    letter-spacing: 1px;
+    transform: translateZ(2px); /* Subtle lift for the text */
+}
+
+/* Add a subtle wood grain texture to the carved text */
+.tile span::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.15' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+    opacity: 0.7;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.tile:hover {
+    /* Tilt up and to the left on hover */
+    transform: perspective(800px) rotateX(15deg) rotateY(-5deg) translateZ(10px);
+    box-shadow: 
+        10px 15px 20px rgba(0, 0, 0, 0.4),
         inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
-.block:active {
+.tile:active {
     cursor: grabbing;
-    transform: translateY(1px);
-    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+    transform: perspective(800px) rotateX(5deg) rotateY(-2deg) translateZ(5px);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Animation for tiles being dragged */
+.tile.dragging {
+    opacity: 0.7;
+    transform: scale(1.05) translateY(-5px);
 }
 
 /* shift board right */
@@ -352,17 +420,14 @@ button {
     height: 100%;
 }
 
-/* Make widgets appear pressed when dragging */
+/* Make widgets appear tilted when dragging or lifting from slots */
 .widget:active, .widget.dragging {
     cursor: grabbing;
-    transform: scale(0.98);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-/* Animation for blocks being dragged */
-.block.dragging {
-    opacity: 0.7;
-    transform: scale(1.05) translateY(-5px);
+    transform: perspective(800px) rotateX(15deg) rotateY(-5deg) translateZ(10px);
+    box-shadow: 
+        10px 15px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* Animation for receiving a widget */
@@ -379,26 +444,25 @@ button {
     }
 }
 
-/* Animation for widget placement */
-@keyframes place-widget {
-    0% { 
-        transform: translateY(-10px) scale(0.95);
-        opacity: 0.7;
+/* Animation for removing a widget (lifting off the board) */
+@keyframes lift-widget {
+    0% {
+        transform: perspective(800px) rotateX(2deg) rotateY(0deg) translateZ(0);
+        box-shadow: 
+            0 8px 16px rgba(0, 0, 0, 0.4),
+            inset 0 1px 3px rgba(255, 255, 255, 0.2);
     }
-    40% {
-        transform: translateY(5px) scale(1.02);
-    }
-    70% {
-        transform: translateY(-2px) scale(0.99);
-    }
-    100% { 
-        transform: translateY(0) scale(1);
-        opacity: 1;
+    100% {
+        transform: perspective(800px) rotateX(15deg) rotateY(-5deg) translateZ(10px);
+        box-shadow: 
+            10px 15px 20px rgba(0, 0, 0, 0.4),
+            inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        opacity: 0.9;
     }
 }
 
-.slot.receiving .widget {
-    animation: place-widget 0.5s ease-out forwards;
+.widget.lifting {
+    animation: lift-widget 0.3s ease-out forwards;
 }
 
 /* Enhance ripple effect for sound visualization */
@@ -515,7 +579,7 @@ button {
 }
 
 .texture-dot.active {
-    border: 3px solid #fff;
+    border: 1px solid var(--wood-light);
     z-index: 10;
     animation: glow 2s infinite;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.8);

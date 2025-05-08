@@ -1,9 +1,12 @@
 <!-- =================================================
-  Wooden Planner – Tangible Wood Block Interface (v5)
+  Wooden Planner – Tangible Wood Block Interface (v6)
   2025‑05‑07
   * Redesigned wood selector with 3D coaster-like texture dots
   * Rich shadow effects and depth perception for wood texture selection
   * Tighter grouping of wood textures for more intuitive selection
+  * Rebranded blocks as wooden tiles with authentic flat appearance
+  * Natural tilt animation when interacting with wooden tiles
+  * Carved/inlaid text effect for woodworking authenticity
 ================================================= -->
 
 <!doctype html>
@@ -17,13 +20,25 @@
 </head>
 
 <body>
-    <!-- Wood‑block palette -->
+    <!-- Wooden-tile palette -->
     <aside id="palette">
-        <h2>Modules</h2>
-        <div class="block" data-module="calendar">Calendar</div>
-        <div class="block" data-module="checklist">Checklist</div>
-        <div class="block" data-module="habit">Habit Tracker</div>
-        <div class="block" data-module="gauge">Progress Gauge</div>
+        <h2>Tiles</h2>
+        <div class="tile" data-module="calendar">
+            <span>Calendar</span>
+            <div class="grain"></div>
+        </div>
+        <div class="tile" data-module="checklist">
+            <span>Checklist</span>
+            <div class="grain"></div>
+        </div>
+        <div class="tile" data-module="habit">
+            <span>Habit Tracker</span>
+            <div class="grain"></div>
+        </div>
+        <div class="tile" data-module="gauge">
+            <span>Progress Gauge</span>
+            <div class="grain"></div>
+        </div>
     </aside>
 
     <!-- Main wooden panel -->
@@ -36,7 +51,7 @@
 
     <!-- Wood texture selector -->
     <aside id="wood-selector">
-        <h2>Wood Texture</h2>
+        <h2>Settings</h2>
         <div class="texture-ring">
             <div class="texture-dot" data-wood="bamboo"></div>
             <div class="texture-dot" data-wood="beech"></div>
